@@ -34,6 +34,30 @@ async def read_strategy_resource(name):
             result = await session.read_resource(f"accounts://strategy/{name}")
             return result.contents[0].text
         
+"""
+ISSUE: The read_accounts_resource and read_strategy_resource functions are giving me an error when I run them in testing.ipynb.
+Each function is creating a new MCP client connection, and when I am calling them back to back in testing.ipynb 
+there's a race condition with closing connections. The error happens because the connection cleanup from the first 
+call interferes with the second call starting up.
+
+SOLUTION: Create a combined function that reuses a single connection for both reads, 
+which is more efficient and avoids the connection cleanup race condition entirely.
+So, I am adding a new function below that has the combined functionality of the 
+read_accounts_resource and read_strategy_resource functions.
+
+Side note: A race condition is when the outcome of your code depends on the 
+timing of events that aren't fully under your control.
+"""
+
+async def read_account_and_strategy(name):
+    """Read both account and strategy in a single session"""
+    async with stdio_client(params) as streams:
+        async with mcp.ClientSession(*streams) as session:
+            await session.initialize()
+            account = await session.read_resource(f"accounts://accounts_server/{name}")
+            strategy = await session.read_resource(f"accounts://strategy/{name}")
+            return account.contents[0].text, strategy.contents[0].text
+        
 async def get_accounts_tools_openai():
     openai_tools = []
     for tool in await list_accounts_tools():

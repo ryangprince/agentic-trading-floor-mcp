@@ -18,10 +18,9 @@ with sqlite3.connect(DB) as conn:
             type TEXT,
             message TEXT
         )
-    '''
-    )
+    ''')
     cursor.execute('CREATE TABLE IF NOT EXISTS market (date TEXT PRIMARY KEY, data TEXT)')
-    conn.commit()
+    conn.commit()    
     
 def write_account(name, account_dict):
     json_data = json.dumps(account_dict)
