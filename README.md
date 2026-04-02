@@ -52,3 +52,9 @@ PUSHOVER_TOKEN=your_app_token
 # Simulation Settings
 RUN_EVERY_N_MINUTES=60
 USE_MANY_MODELS=true
+
+### 2. Launching the Floor
+The easiest way to start the entire system (including the UI and the automated trading loop) is:
+
+```bash
+uv run app.py
