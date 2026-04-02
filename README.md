@@ -1,59 +1,45 @@
-Agentic Trading Floor (MCP-Powered)
-An autonomous, multi-agent financial simulation where AI "Traders" operate on a virtual trading floor. Each agent follows a unique investment strategy, performs deep market research via the Model Context Protocol (MCP), and executes trades within a persistent sandbox environment.
+# Agentic Trading Floor (MCP-Powered)
 
-🏗 System Architecture
-1. The Trading Floor & Dashboard
-app.py & trading_floor.py: The core orchestration layer. It manages a roster of agents (e.g., Warren, George, Ray, Cathie) and powers a Gradio-based UI.
+An autonomous, multi-agent financial simulation where AI "Traders" operate on a virtual trading floor. Each agent follows a unique investment strategy, performs deep market research via the **Model Context Protocol (MCP)**, and executes trades within a persistent sandbox environment.
 
-Real-time Monitoring: The dashboard displays portfolio value charts (via Plotly), live-updating holdings tables, and color-coded logs of agent activities.
+## 🏗 System Architecture
 
-Multi-Model Support: The floor can run heterogeneous agents using different LLMs (GPT-4o, Gemini, Claude, Grok, or DeepSeek) to compare trading philosophies and model performance.
+### 1. The Trading Floor & Dashboard
+* **`app.py` & `trading_floor.py`**: The core orchestration layer. It manages a roster of agents (e.g., Warren, George, Ray, Cathie) and powers a **Gradio-based UI**.
+* **Real-time Monitoring**: The dashboard displays portfolio value charts (via Plotly), live-updating holdings tables, and color-coded logs of agent activities.
+* **Multi-Model Support**: The floor can run heterogeneous agents using different LLMs (GPT-4o, Gemini, Claude, Grok, or DeepSeek) to compare trading philosophies and model performance.
 
-2. The MCP Ecosystem
+### 2. The MCP Ecosystem
 The system leverages a modular architecture where capabilities are decoupled into specialized MCP servers:
+* **Market Server (`market_server.py`)**: Fetches real-time and EOD share prices using Polygon.io via the Massive SDK.
+* **Accounts Server (`accounts_server.py`)**: Manages the persistent SQLite "ledger." It handles trades, balance checks, and strategy updates.
+* **Researcher Server**: A specialized agentic tool that grants Traders access to **Brave Search**, web-fetching capabilities, and a **Knowledge Graph** (libSQL) to store and recall entity information over time.
+* **Push Server (`push_server.py`)**: Forwards trade summaries and portfolio health alerts to the user via **Pushover**.
 
-Market Server (market_server.py): Fetches real-time and EOD share prices using Polygon.io via the Massive SDK.
+### 3. Persistence & Logic
+* **`accounts.py`**: Defines the `Account` and `Transaction` schemas using Pydantic. It handles the math for PnL, portfolio valuation, and trade execution.
+* **`database.py`**: Manages the SQLite backend for accounts, market history, and a centralized logging system.
+* **`tracers.py`**: A custom `LogTracer` that generates unique trace IDs for every session, allowing the UI to map specific agent actions back to the underlying logs.
 
-Accounts Server (accounts_server.py): Manages the persistent SQLite "ledger." It handles trades, balance checks, and strategy updates.
+## ✨ Core Features
+* **Autonomous Decision Loops**: Agents run on a schedule (e.g., every 60 minutes) to either seek new opportunities or rebalance existing holdings.
+* **Strategic Evolution**: Traders can choose to autonomously update or evolve their investment strategy if they feel their current approach is underperforming.
+* **Knowledge Graph Memory**: The Researcher agent builds expertise over time, storing info on companies and market conditions in a persistent graph.
+* **Simulated Market Rules**: Supports market-open checks, share-price caching, and realistic transaction logging with spread simulation.
 
-Researcher Server: A specialized agentic tool that grants Traders access to Brave Search, web-fetching capabilities, and a Knowledge Graph (libSQL) to store and recall entity information over time.
+## 🛠 Tech Stack
+* **Core:** Model Context Protocol (MCP), FastMCP
+* **UI:** Gradio, Plotly, Pandas
+* **LLMs:** OpenAI (GPT-4o), with support for Gemini, DeepSeek, and Grok
+* **Database:** SQLite3
+* **Market Data:** Polygon.io (via Massive SDK)
+* **Search:** Brave Search API
 
-Push Server (push_server.py): Forwards trade summaries and portfolio health alerts to the user via Pushover.
+## 🚀 Installation & Setup
 
-3. Persistence & Logic
-accounts.py: Defines the Account and Transaction schemas using Pydantic. It handles the math for PnL, portfolio valuation, and trade execution (including spreads).
-
-database.py: Manages the SQLite backend for accounts, market history, and a centralized logging system.
-
-tracers.py: A custom LogTracer that generates unique trace IDs for every session, allowing the UI to map specific agent actions back to the underlying logs.
-
-✨ Core Features
-Autonomous Decision Loops: Agents run on a schedule (e.g., every 60 minutes) to either seek new opportunities or rebalance existing holdings based on market shifts.
-
-Strategic Evolution: Traders can choose to autonomously update or evolve their investment strategy via the change_strategy tool if they feel their current approach is underperforming.
-
-Knowledge Graph Memory: The Researcher agent builds expertise over time, storing info on companies, websites, and market conditions in a persistent graph.
-
-Simulated Market Rules: Supports market-open checks, share-price caching, and realistic transaction logging with spread simulation.
-
-🛠 Tech Stack
-Core: Model Context Protocol (MCP), FastMCP
-
-UI: Gradio, Plotly, Pandas
-
-LLMs: OpenAI (GPT-4o), with support for Gemini, DeepSeek, and Grok
-
-Database: SQLite3
-
-Market Data: Polygon.io (via Massive SDK)
-
-Search: Brave Search API
-
-🚀 Installation & Setup
-1. Configuration
-Create a .env file in the root directory with your credentials:
-
-Bash
+### 1. Configuration
+Create a `.env` file in the root directory with your credentials:
+```bash
 # API Keys
 OPENAI_API_KEY=your_key
 MASSIVE_API_KEY=your_polygon_key
@@ -65,21 +51,4 @@ PUSHOVER_TOKEN=your_app_token
 
 # Simulation Settings
 RUN_EVERY_N_MINUTES=60
-USE_MANY_MODELS=true # Set to true to use a mix of LLMs
-2. Launching the Floor
-The easiest way to start the entire system (including the UI and the automated trading loop) is:
-
-Bash
-uv run app.py
-This will launch the Gradio dashboard and begin the orchestration of the background trading agents.
-
-📝 Logic Flow
-Wake up: The trading_floor triggers a run for all active Traders.
-
-Context Retrieval: The Trader reads its strategy and account state from the accounts_server resources.
-
-Research: The Trader delegates complex inquiries to the Researcher agent, which searches the live web and queries its knowledge graph.
-
-Action: The Trader decides to buy/sell or hold. If trading, it calls the accounts_server tools with a written rationale.
-
-Traceability: Every step is logged to accounts.db via the LogTracer and pushed to the UI for real-time observation.
+USE_MANY_MODELS=true
